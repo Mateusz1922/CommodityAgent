@@ -1,0 +1,57 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+
+# --- Sekrety i Konfiguracja (NAJWAŻNIEJSZE) ---
+.env
+.flaskenv
+secrets.json
+*.pem
+*.key
+
+# --- Bazy Danych i AI (Specyficzne dla Twojego projektu) ---
+# Nie chcemy trzymać binarnych plików bazy wektorowej w Git
+chroma_db/
+qdrant_data/
+*.db
+*.sqlite3
+
+# --- Dane i Modele ---
+# Jeśli pobierasz pliki modeli ręcznie (np. .gguf)
+models/
+data/
+*.csv
+*.jsonl
+*.pdf
+
+# --- Logi ---
+*.log
+logs/
+
+# --- Systemowe (Windows/Mac) ---
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# --- IDE (VS Code / PyCharm) ---
+.vscode/
+.idea/
+*.swp
+*.swo
