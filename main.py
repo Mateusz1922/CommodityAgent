@@ -1,7 +1,11 @@
 import os
+from dotenv import load_dotenv
 from crewai import Agent, Task, Crew, Process
 from langchain_community.llms import Ollama
 from langchain_community.tools import DuckDuckGoSearchRun
+
+load_dotenv()
+slack_url = os.getenv("SLACK_WEBHOOK_URL")
 
 # 1. Local model config
 llama4 = Ollama(model="llama4:8b")
