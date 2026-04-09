@@ -1,6 +1,7 @@
 # Core Agentic Framework
 crewai>=0.30.0
 langchain-community>=0.2.0
+pydantic>=2.0.0
 
 # LLM & Tools
 ollama>=0.1.0
