@@ -2,9 +2,10 @@ import os
 import requests
 from dotenv import load_dotenv
 from crewai import Agent, Task, Crew, LLM, Process
-from crewai.tools import tool # tool decorator
+from crewai.tools import BaseTool # tool decorator
 from langchain_community.llms import Ollama
 from langchain_community.tools import DuckDuckGoSearchRun
+from pydantic import BaseModel, Field
 
 load_dotenv()
 SLACK_URL = os.getenv("SLACK_WEBHOOK_URL")
@@ -15,11 +16,24 @@ my_llm = LLM(
     base_url="http://localhost:11434"
 )
 
-@tool("search_internet")
-def search_internet(query: str):
-    """Searching internet in order to find newest information about the given topic."""
-    search = DuckDuckGoSearchRun()
-    return search.run(query)
+class SearchInput(BaseModel):
+    query: str = Field(..., description="The search query to look up on the internet.")
+
+class InternetSearchTool(BaseTool):
+    name: str = "search_internet"
+    description: str = "Searching in internet in order to find newest market information."
+    args_schema: type[BaseModel] = SearchInput
+
+    def _run(self, query: str) -> str:
+        try:
+            search = DuckDuckGoSearchRun()
+            return search.run(query)
+        except Exception as e:
+            return f"Search error: {str(e)}"
+
+# 3. Inicjalizacja narzędzia
+search_tool_instance = InternetSearchTool()
+
 
 def send_to_slack(message):
     if SLACK_URL:
@@ -34,9 +48,10 @@ researcher = Agent(
     role="Commodity Market Specialist",
     goal="Find all newest information about copper prices and market trends for April 2026",
     backstory="You're an analyst with 10 years of experience in Goldman Sachs. You can differentiate between news noise and real market signals",
-    tools=[search_internet],
+    tools=[search_tool_instance],
     llm=my_llm,
     verbose=True,
+    max_iter=5,
     allow_delegation=False
 )
 
