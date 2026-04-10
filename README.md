@@ -37,3 +37,15 @@ Validation: Pydantic
 Data Sources: DuckDuckGo Search API
 
 Notifications: Slack API
+
+### Visual System Workflow
+
+graph TD
+    A[System start] --> B{Agent Researcher}
+    B -->|Looks for information| C[DuckDuckGo]
+    B -->|Fetches prices| D[yfinance]
+    C --> E[Agent Analyst]
+    D --> E
+    E -->|Trend analysis| F[Agent Writer]
+    F -->|Report generation| G[Slack Webhook]
+    G --> H[End]
