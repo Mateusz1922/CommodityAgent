@@ -12,6 +12,7 @@ yfinance>=0.2.40
 # Vector DB & RAG
 chromadb>=0.5.0
 sentence-transformers>=3.0.0
+beautifulsoup4>=4.12.3
 
 # Utils
 python-dotenv>=1.0.1

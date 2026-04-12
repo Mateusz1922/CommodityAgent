@@ -1,9 +1,15 @@
 # separating the tools, so that we can easily test and add new ones
 import yfinance as yf
 from crewai.tools import BaseTool
-from pydantic import BaseModel, Field
+from crewai_tools import DirectorySearchTool
+from pydantic import BaseModel, Field, PrivateAttr
 from langchain_community.tools import DuckDuckGoSearchRun
-from config import logger
+from config import logger, my_llm
+from langchain_community.vectorstores import Chroma
+from langchain_community.embeddings import OllamaEmbeddings
+from langchain_community.document_loaders import DirectoryLoader, TextLoader
+from langchain_text_splitters import CharacterTextSplitter
+import os
 
 class SearchInput(BaseModel):
     query: str = Field(..., description="The search query to look up on the internet.")
@@ -39,3 +45,63 @@ class CopperPriceTool(BaseTool):
         except Exception as e:
             logger.error(f"yfinance error for {ticker}: {str(e)}")
             return f"Fetching data unsuccessful for {ticker}: {str(e)}"
+
+# Local searcher scheme
+class LocalSearchInput(BaseModel):
+    query: str = Field(..., description="The question to ask based on local knowledge base.")
+
+# tool class
+class LocalKnowledgeTool(BaseTool):
+    name: str = "search_local_notes"
+    description: str = "Searches internal makrdown notes about commodities and copper market"
+    args_schema: type[BaseModel] = LocalSearchInput
+
+    # PrivateAttr used in order to make Pydantic not to try to valudate the db
+    _db: any = PrivateAttr()
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        logger.info("Initializing Local Vector Database... this may take a moment")
+
+        # embeddings config (creates text fingerprints)
+        embeddings = OllamaEmbeddings(
+            model="nomic-embed-text",
+            base_url="http://localhost:11434"
+        )
+
+        # load .md files from knowledge/ folder
+        try:
+            loader = DirectoryLoader("knowledge/", glob="**/*.md", loader_cls=TextLoader)
+            docs = loader.load()
+
+            # text splitting
+            text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
+            texts = text_splitter.split_documents(docs)
+
+            # Create temporary vector DB in memory (or in folder)
+            # Bypassing OpenAI
+            self._db = Chroma.from_documents(
+                documents=texts,
+                embedding=embeddings,
+                collection_name="local_knowledge"
+            )
+            logger.info("Vector Database ready and indexed.")
+        except Exception as e:
+            logger.error(f"Failed to initialize database: {e}")
+            self._db = None
+        
+        def _run(self, query: str) -> str:
+            if not self._db:
+                return "Knwoledge base is inaccesible (initialization error)"
+
+            logger.info(f"Searching local notes for: {query}")
+            # Searching in a ready db
+
+            # searching for best fitting fragments
+            results = self._db.similarity_search(query, k=3)
+
+            return "\n---\n".join([res.page_content for res in results])
+    
+# Instance initialization
+knowledge_tool = LocalKnowledgeTool()
+

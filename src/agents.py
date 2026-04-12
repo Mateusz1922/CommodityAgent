@@ -1,6 +1,6 @@
 from crewai import Agent, Task
 from config import my_llm
-from tools import InternetSearchTool, CopperPriceTool
+from tools import InternetSearchTool, CopperPriceTool, knowledge_tool
 
 # 3. Tool initialization
 search_tool_instance = InternetSearchTool()
@@ -11,7 +11,7 @@ researcher = Agent(
     role="Commodity Market Specialist",
     goal="Find all newest information about copper prices and market trends for April 2026",
     backstory="You're an analyst with 10 years of experience in Goldman Sachs. You can differentiate between news noise and real market signals",
-    tools=[search_tool_instance, finance_tool],
+    tools=[search_tool_instance, finance_tool, knowledge_tool],
     llm=my_llm,
     verbose=True,
     max_iter=5,
