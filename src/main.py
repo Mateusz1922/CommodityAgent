@@ -1,7 +1,7 @@
 import requests
 from crewai import Crew, Process
 from config import logger, SLACK_URL, my_llm
-from agents import researcher, writer, task_research, task_report
+from agents import researcher, writer, critic, task_research, task_report, task_review
 
 def send_to_slack(message):
     logger.info("Preparing report delivery to Slack...")
@@ -19,8 +19,8 @@ def send_to_slack(message):
 def run_commodity_system():
     # 4. Orchestration (Crew)
     commodity_crew = Crew(
-        agents=[researcher, writer],
-        tasks=[task_research, task_report],
+        agents=[researcher, writer, critic],
+        tasks=[task_research, task_report, task_review],
         process=Process.sequential, # First search then write
         verbose=True,
         manager_llm=my_llm

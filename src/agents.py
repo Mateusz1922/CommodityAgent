@@ -27,6 +27,18 @@ writer = Agent(
     verbose=True
 )
 
+critic = Agent(
+    role="Senior Risk & Quality Compliance Analyst",
+    goal="Verify the report for factual accuracy, consistency with research data, and professional tone.",
+    backstory="""You are a veteran analyst known for your skepticism. 
+    Your job is to ensure that the Writer didn't hallucinate facts and that 
+    the recommendation (BUY/SELL/WAIT) is logically supported by the provided research.
+    If you find errors, you demand corrections.""",
+    llm=my_llm,
+    verbose=True,
+    allow_delegation=False # We don't let him ask other agents for a justification
+)
+
 # 3. Task definition
 task_research = Task(
     description="Identify 3 crucial factors that impact on the current copper price. Focus on the data from last week",
@@ -35,8 +47,25 @@ task_research = Task(
 )
 
 task_report = Task(
-    description='Based on the research write a report (max 150 words). Finish with a specific recommendation: BUY, SELL or WAIT',
+    description="""Based on the research, write a professional copper market report.
+    1. Summarize 3 key factors.
+    2. Crucial: You MUST end the report with a clear section: 
+       ### RECOMMENDATION: [BUY, SELL, or WAIT]
+       Provide a 1-sentence justification for this choice.""",
     agent=writer,
-    expected_output='Report done in Markdown format.'
+    expected_output='A Markdown report with a mandatory "RECOMMENDATION" section at the end.'
+)
+
+task_review = Task(
+    description="""Review and finalize the copper report. 
+    Your main priority is to ensure the factual data is correct AND that there is a 
+    CLEAR and VISIBLE investor recommendation at the very end.
+    
+    If the recommendation is missing, you must add it based on the research findings.
+    The final output must end with:
+    ### FINAL RECOMMENDATION: [ACTION]""",
+    agent=critic,
+    context=[task_research, task_report],
+    expected_output="Final polished Markdown report ending with a bold FINAL RECOMMENDATION section."
 )
 
