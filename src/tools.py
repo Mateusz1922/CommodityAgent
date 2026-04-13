@@ -90,18 +90,18 @@ class LocalKnowledgeTool(BaseTool):
             logger.error(f"Failed to initialize database: {e}")
             self._db = None
         
-        def _run(self, query: str) -> str:
-            if not self._db:
-                return "Knwoledge base is inaccesible (initialization error)"
+    def _run(self, query: str) -> str:
+        if not self._db:
+            return "Knowledge base is inaccesible (initialization error)"
 
-            logger.info(f"Searching local notes for: {query}")
-            # Searching in a ready db
+        logger.info(f"Searching local notes for: {query}")
+        # Searching in a ready db
 
-            # searching for best fitting fragments
-            results = self._db.similarity_search(query, k=3)
+        # searching for best fitting fragments
+        results = self._db.similarity_search(query, k=3)
 
-            return "\n---\n".join([res.page_content for res in results])
+        return "\n---\n".join([res.page_content for res in results])
     
-# Instance initialization
-knowledge_tool = LocalKnowledgeTool()
+# # Instance initialization
+# knowledge_tool = LocalKnowledgeTool()
 

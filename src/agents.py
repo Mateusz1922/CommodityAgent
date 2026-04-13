@@ -1,10 +1,11 @@
 from crewai import Agent, Task
 from config import my_llm
-from tools import InternetSearchTool, CopperPriceTool, knowledge_tool
+from tools import InternetSearchTool, CopperPriceTool, LocalKnowledgeTool
 
 # 3. Tool initialization
 search_tool_instance = InternetSearchTool()
 finance_tool = CopperPriceTool()
+knowledge_tool = LocalKnowledgeTool()
 
 # 2. Agents definitions
 researcher = Agent(
